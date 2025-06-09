@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "conio.h": "c",
+        "windows.h": "c",
+        "tetris_logic.h": "c",
+        "fpga_io.h": "c",
+        "fpga_io_vs.h": "c",
+        "stdint.h": "c"
+    }
+}

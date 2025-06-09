@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-tetris",
+      "type": "shell",
+      "command": "gcc",
+      "args": [
+        "main.c",
+        "tetris_logic.c",
+        "fpga_io.c",
+        "-o",
+        "tetris.exe"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}
