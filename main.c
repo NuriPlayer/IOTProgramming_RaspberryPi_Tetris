@@ -34,6 +34,12 @@ int main() {
     get_display_buffer(buffer);
     write_dot(buffer);
 
+    // 첫 블록 스폰(실패 시 즉시 게임오버)
+    if (!spawn_block()) {
+        // printf("GAME OVER! SPAWN FAILED.\n");
+        return 0;
+    }
+
     while (1) {
         // ========== [1] 사용자 입력 처리 ==========
         int input_flag = 0;
@@ -63,7 +69,10 @@ int main() {
         if (now - last_fall_time >= 1000) {
             last_fall_time = now;
             if (!falling_block_active) {
-                spawn_block();
+                if (!spawn_block()) {
+                    printf("GAME OVER!\n");
+                    break;
+                }
             } else {
                 move_block_down();
             }
@@ -86,6 +95,7 @@ int main() {
         usleep(10000); // CPU 과점유 방지
     }
 
+    
     close_fpga_io();
     return 0;
 }

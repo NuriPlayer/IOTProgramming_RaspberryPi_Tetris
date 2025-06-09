@@ -20,12 +20,15 @@ void render_field(void);
 void generate_next_block(void);
 void render_next_block(void);
 int is_falling_block_active(void);
-void spawn_block(void);
+int spawn_block(void);
 void move_block_down(void);
 void print_next_block_preview(void);
 int try_move_block(int);
 void get_display_buffer(int buffer[FIELD_HEIGHT][FIELD_WIDTH]);
 void hard_drop(void);
+void fix_falling_block(void);
+int is_game_over(void);
+
 
 
 #endif
