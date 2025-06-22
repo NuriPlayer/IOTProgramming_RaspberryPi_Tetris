@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include "fpga_io.h"
 
 // 디바이스 파일 경로
@@ -41,7 +42,7 @@ int write_led(const int led[2][4]) {
     uint8_t val = 0;
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 4; ++j)
-            val |= (led[1 - i][3- j] ? 1 : 0) << (i * 4 + j);
+            val |= (led[1 - i][3 - j] ? 1 : 0) << (i * 4 + j);
 
     return write(fd_led, &val, 1);
 }
@@ -83,14 +84,15 @@ int play_tone(int freq_hz, int duration_ms) {
     if (fd_buzzer < 0 || freq_hz <= 0 || duration_ms <= 0) return -1;
 
     int period = 1000000 / freq_hz;
-    int half = period / 2;
+    int on = period * 9 / 10;
+    int off = period / 10;
     int cycles = (duration_ms * 1000) / period;
 
     for (int i = 0; i < cycles; ++i) {
         write_buzzer(1);
-        delay_us(half);
+        delay_us(on);
         write_buzzer(0);
-        delay_us(half);
+        delay_us(off);
     }
     return 0;
 }
@@ -106,8 +108,51 @@ int play_melody(const int notes[][2], int length) {
     return 0;
 }
 
+// 디바운싱 시간(ms)
+#define DEBOUNCE_DELAY_MS 200
+
+// 마지막으로 버튼을 눌렀던 시간 저장용
+static struct timeval last_press_time = {0, 0};
+
 int read_push(uint8_t push[9]) {
-    return read(fd_push, push, 9);
+    uint8_t buffer[9];
+    int result = read(fd_push, buffer, 9);
+    if (result < 0) return result;
+
+    // 현재 시간 가져오기
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    // 시간 차이 계산
+    long elapsed_ms = (now.tv_sec - last_press_time.tv_sec) * 1000 +
+                      (now.tv_usec - last_press_time.tv_usec) / 1000;
+
+    // 눌린 버튼 확인
+    int pressed = 0;
+    for (int i = 0; i < 9; i++) {
+        if (buffer[i]) {
+            pressed = 1;
+            break;
+        }
+    }
+
+    if (pressed) {
+        // 마지막 버튼 누름 이후 디바운스 시간 경과했는지 확인
+        if (elapsed_ms >= DEBOUNCE_DELAY_MS) {
+            memcpy(push, buffer, 9);  // 유효 입력 전달
+            gettimeofday(&last_press_time, NULL);  // 마지막 누름 시간 갱신
+            return result;  // 버튼 입력 정상 리턴
+        } else {
+            // 무시할 입력 (디바운스 처리)
+            memset(push, 0, 9);
+            return 0;  // 읽긴 했지만 무시
+        }
+    }
+
+    // 버튼 안 눌렸으면 그냥 리턴
+    memset(push, 0, 9);
+    return result;
 }
+
 
 

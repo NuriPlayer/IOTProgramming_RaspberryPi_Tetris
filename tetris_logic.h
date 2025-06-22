@@ -12,6 +12,12 @@ extern int falling_block_type;
 extern int falling_block_active;
 
 extern int tetro3x3[6][3][3];
+extern int tetro4x4[6][4][4];
+
+extern int score;  // 현재 점수
+extern int difficulty;
+extern int falling_block_size; // 현재 떨어지는 블록의 크기 (3x3 또는 4x4)
+extern int block_fixed_flag;
 
 // 입출력용 함수
 void clear_screen(void);
@@ -28,7 +34,10 @@ void get_display_buffer(int buffer[FIELD_HEIGHT][FIELD_WIDTH]);
 void hard_drop(void);
 void fix_falling_block(void);
 int is_game_over(void);
-
-
+int clear_full_lines(void);
+void add_score(int lines_cleared);
+int get_top_offset(int type);
+int get_top_offset_4x4(int type);
+void rotate_falling_block(void);
 
 #endif
